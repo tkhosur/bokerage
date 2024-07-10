@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id          Int         @id @default(autoincrement())
+    username    String      @unique
+    email       String      @unique
+    password    String
+    avatar      String?
+    created_at  DateTime    @default(now())
+    posts       Post[]
+    savedPosts  SavedPost[]
+    chat        Chat[]
+    userChats   UserChat[]
+}
+
+model Post {
+    id          Int         @id @default(autoincrement())
+    title       String
+    price       Int
+    images      Image[]
+    address     String
+    city        String
+    beadroom    Int
+    bathroom    Int
+    latitude    String
+    longitude   String
+    type        String
+    property    String
+    created_at  DateTime    @default(now())
+    user        User        @relation(fields: [userId], references: [id])
+    userId      Int    
+    postDetail  PostDetail?
+    savedPosts  SavedPost[]
+}
+
+model PostDetail {
+    id          Int      @id @default(autoincrement())
+    description String
+    utilities   String?
+    pet         String?
+    size        Int?
+    school      Int?
+    bus         Int?
+    restaurant  Int?
+    post        Post     @relation(fields: [postId], references: [id])
+    postId      Int      @unique
+}
+
+model Image {
+    id      Int    @id @default(autoincrement())
+    url     String
+    post    Post   @relation(fields: [postId], references: [id])
+    postId  Int
+}
+
+model SavedPost {
+    id      Int    @id @default(autoincrement())
+    user    User   @relation(fields: [userId], references: [id])
+    post    Post   @relation(fields: [postId], references: [id])
+    userId  Int    @unique
+    postId  Int    @unique
+    created_at  DateTime    @default(now())
+
+    @@unique([userId, postId])
+}
+
+model Chat {
+    id          Int            @id @default(autoincrement())
+    users       User[]        
+    seenBy      String
+    message     Message[]
+    created_at  DateTime       @default(now())
+    lastMessage String?
+    userChats   UserChat[]
+}
+
+model Message {
+    id         Int            @id @default(autoincrement())
+    text       String
+    userId     Int
+    chat       Chat           @relation(fields: [chatId], references: [id])
+    chatId     Int
+    created_at DateTime       @default(now())
+}
+
+model UserChat {
+  userId  Int
+  chatId  Int
+  user    User @relation(fields: [userId], references: [id])
+  chat    Chat @relation(fields: [chatId], references: [id])
+  @@id([userId, chatId])
+}
